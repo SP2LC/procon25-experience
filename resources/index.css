@@ -1,3 +1,15 @@
+#demo {
+
+   background-color: #cfc;
+   float: bottom;
+
+}
+
+#head {
+   background-color: #ffff99;
+   float: top;
+
+}
 
 #header {
     margin: 0 auto;

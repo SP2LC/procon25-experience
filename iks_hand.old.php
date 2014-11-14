@@ -1,7 +1,5 @@
-<!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width,user-scalable=no">
 <script src ="jquery-1.11.1.js"></script>
     <title>procon25 program test page </title>
 <link rel="stylesheet" href="resources/index.css">
@@ -21,10 +19,23 @@ if(!$db_selected){
   die('error');
 }
 //$_GET["score_id"] = "1228";
-if (!isset($_GET["prob_id"])) {
+if (!isset($_GET["score_id"])) {
   die('error');
 }
-$id_str = intval($_GET["prob_id"]);
+$sql = <<<EOS
+SELECT answer_string FROM answers WHERE score_id=%d
+EOS;
+$res = mysql_query(sprintf($sql, intval($_GET["score_id"])));
+while ($row = mysql_fetch_assoc($res)) {
+  echo "<pre>";
+  //echo $row["answer_string"];
+  echo "</pre>";;
+  $answer_string = $row["answer_string"];
+}
+
+$sql_str = "SELECT problem_id FROM score WHERE score_id=%d";
+$respo = mysql_query(sprintf($sql_str,$_GET["score_id"]));
+$id_str = mysql_result($respo,0);
 $sql_splits = "SELECT columns,rows, selection_rate, exchange_rate FROM problem_info WHERE problem_id=%d";
 $respon = mysql_query(sprintf($sql_splits,$id_str));
 $res_arr = mysql_fetch_array($respon,MYSQL_NUM);
@@ -67,6 +78,10 @@ function csv_read($ID){
   return array($ans_csv,$x_len,$y_len,$sel_rate,$cha_rate);
 }
 list($ans_csv, $_, $_, $_, $_) = csv_read($id_str);
+function callback($row) {
+  return join(",", $row);
+}
+$correct = join(",", array_map("callback", $ans_csv));
 
 list($w,$h) = getimagesize($path."00.png");
 for($x=0;$x<$id_columns;$x++)
@@ -83,15 +98,12 @@ for($x=0;$x<$id_columns;$x++)
 $ans_str = json_encode($answer_string);
 echo $row["answer_string"];
 $version = $row["version"];
-echo sprintf("<input style='position: absolute; top: 0; left: %d; 'type='button' id='start' value='スタート'>",90 + $w * $x);
-echo sprintf("<input style='position: absolute; top: 100; left: %d; 'type='button' id='reset' value='リセット' onClick='reset()'>",90 + $w * $x);
+echo sprintf("<input style='position: absolute; top: 0; left: %d; 'type='button' name='reset' value='リセット' onClick='reset()'>",90 + $w * $x);
 echo sprintf("");
-/*
 echo sprintf("<pre style='position: absolute; top: 70; left: %d;'>", 10 + $w * $x);
 echo $answer_string;
 echo $version;
-echo "</pre>";
-*/
+echo "</pre>"
 ?>
 <script style ="text/javascript">
   
@@ -213,45 +225,12 @@ function setEvents() {
 
 var position = [];
 
-var finished = false;
-var commands = [];
-var start_time;
-
 function command_controll() {
-  if (check()) {
-    finished = true;
-    var size = Math.min(wid * columns, len * rows);
-    var kansei = $("<img>", {src: "kansei.png", width: size, height: size});
-    $("body").append(kansei);
-    kansei.css("position", "absolute");
-    kansei.css("top", 0);
-    kansei.css("left", wid * columns/ 2.0 - size / 2.0);
-    kansei.css("z-index", 300);
-    kansei.css("display", "block");
-    var score = $("<p>");
-    score.css("display", "block");
-    score.css("position", "absolute");
-    score.css("top", 200),
-    score.css("left", wid * columns + 10);
-    score.css("font-size", "large");
-    var cost = calc_cost(commands);
-    var time = (new Date() - start_time) / 1000.0
-    score.text("コスト=" + cost.toString() + " 時間=" + Math.round(time).toString() + "秒");
-    $("body").append(score);
-    var answer_string = dump(commands);
-    $.post("save.php", {
-      "probID": <?php echo $id_str ?>, 
-      "answer_string": answer_string,
-      "is_hand": 1
-    }, function(a) { console.log(a); });
-    return;
-  }
-  if (opQueue.length == 0 && !finished) {
+  if (opQueue.length == 0) {
     setTimeout(command_controll, 10);
     return;
   }
   var op = opQueue.pop();
-  commands.push(op);
   if(op == "U"){
     var pos_id = read_id(""+position);
     var position2 = write_id(pos_id[0],pos_id[1]-1);
@@ -297,100 +276,20 @@ function command_controll() {
   }
 }
 
-var ans_csv = <?php echo json_encode($ans_csv) ?>;
+var correct = <?php echo json_encode($correct) ?>;
 function check() {
-  var ok = true;
-  for (var i = 0; i < columns; i++) {
-    for (var j = 0; j < columns; j++) {
-      var str = $("#" + write_id(i, j)).attr("src").match(/([0-9A-F][0-9A-F]).png/)[1];
-      ok &= ans_csv[i][j] === str;
-    }
-  }
-  return ok;
-}
-
-function calc_cost(commands) {
-  var cost = 0;
-  for (var i = 0; i < commands.length; i++) {
-    if (commands[i].charAt(0) === "S") {
-      cost += sel_rate;
-    } else {
-      cost += exc_rate;
-    }
-  }
-  return cost;
-}
-
-function dump(commands) {
-  var str = "";
-  var current_exc = "";
-  var sel = "";
-  var sel_count = 0;
-  for (var i = 0; i < commands.length; i++) {
-    if (commands[i].charAt(0) === "S") {
-      sel_count++;
-      if (sel != "") {
-        str += sel + "\r\n";
-        str += current_exc.length.toString() + "\r\n";
-        str += current_exc + "\r\n";
-      }
-      current_exc = "";
-      var pos = read_id(commands[i].slice(1));
-      sel = pos[0].toString(16).toUpperCase() + pos[1].toString(16).toUpperCase();
-    } else {
-      current_exc += commands[i];
-    }
-  }
-  str += sel + "\r\n";
-  str += current_exc.length.toString() + "\r\n";
-  str += current_exc + "\r\n";
-  return sel_count.toString() + "\r\n" + str;
 }
 
 window.onload = function(ans_str)
     {
-      //alert("画像に合わせて拡大または縮小してください");
+      alert("画像に合わせて拡大または縮小してください");
       var blc_num = <?php echo $ans_str; ?>;
       //setInterval(command_controll,spd);
       sel_rate = <?php echo $sel_rate; ?>;
-      spd = 50;//sel_rate * 10;
+      spd = 75;//sel_rate * 10;
       exc_rate = <?php echo $exc_rate; ?>;
-
-      console.log(screen.width);
-      console.log(screen.height);
-      console.log(wid);
-      console.log(len);
-      if (wid * columns > screen.width) {
-        wid = 1.0 * screen.width / columns;
-        len = len * (screen.width) / (wid * columns);
-      }
-      if (len * rows > screen.height - 110) {
-        wid = wid * ((screen.height - 110)) / (len * rows);
-        len = 1.0 * (screen.height - 110) / rows;
-      }
-      //$("img").attr("width", wid);
-      //$("img").attr("height", len);
-      for (var i = 0; i < columns; i++) {
-        for (var j = 0; j < rows; j++) {
-          var img = $("#" + write_id(i, j));
-          img.attr("width", wid);
-          img.attr("height", len);
-          img.css("left", wid * i);
-          img.css("top", len * j);
-        }
-      }
-      var start = $("#start");
-      start.css("left", wid * columns + 10);
-      start.css("top", 0);
-      var reset = $("#reset");
-      reset.css("left", wid * columns + 10);
-      reset.css("top", start.height() + 5);
-
-      $("#start").bind("click", function(e) {
-        setEvents();
-        command_controll();
-        start_time = new Date();
-      });
+      setEvents();
+      command_controll();
     }
 </script>
   </body>

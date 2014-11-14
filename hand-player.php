@@ -16,27 +16,21 @@ $db_selected = mysql_select_db($db_name, $link);
 if(!$db_selected){
   die('error');
 }
-//$_GET["score_id"] = "1228";
-if (!isset($_GET["score_id"])) {
-  $score_id=1244;
-}
-else{
-  $score_id=$_GET["score_id"];
-}
-$sql = <<<EOS
-SELECT answer_string FROM answers WHERE score_id=%d
-EOS;
-$res = mysql_query(sprintf($sql, intval($score_id)));
-while ($row = mysql_fetch_assoc($res)) {
-  echo "<pre>";
-  //echo $row["answer_string"];
-  echo "</pre>";;
-  $answer_string = $row["answer_string"];
-}
 
-$sql_str = "SELECT problem_id FROM score WHERE score_id=%d";
-$respo = mysql_query(sprintf($sql_str,$score_id));
-$id_str = mysql_result($respo,0);
+$f = fopen("hand.txt", "r");
+$id_str = fgets($f);
+$answer_string = "";
+
+while($temp = fgets($f)){
+   $answer_string = $answer_string.$temp;
+}
+$answer_string=rtrim($answer_string);
+
+#$answer_string = rtrim(fread($f, filesize("hand.txt")), "\r\n");
+fclose($f);
+
+//$_GET["score_id"] = "1228";
+#$id_str = intval($_GET["prob_id"]);
 $sql_splits = "SELECT columns,rows, selection_rate, exchange_rate FROM problem_info WHERE problem_id=%d";
 $respon = mysql_query(sprintf($sql_splits,$id_str));
 $res_arr = mysql_fetch_array($respon,MYSQL_NUM);

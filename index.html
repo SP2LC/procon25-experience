@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; utf-8">
+		<title>413教室 SP2LC</title>
+	</head>
+	<body>
+		<center>
+		<h1>全国高専プログラミングコンテスト<br>体験ブースへようこそ！</h1>
+		<h3>ここでは今年度の高専プロコン競技部門を<br>擬似的に体験する事が出来ます！！</h3>
+<!--写真-->
+		<script src="jquery-1.11.1.js" type="text/javascript"></script>
+		<script src="http://peacepopo.net/wp-content/uploads/endless_scroll.js" type="text/javascript"></script>
+		<style type="text/css">
+		.slider img{
+			border:0px;
+			margin:5px;
+		}
+		</style>
+		<div id="myslider" class="slider">
+		<img src="home_img\01.png">
+		<img src="home_img\02.png">
+		<img src="home_img\03.png">
+		<img src="home_img\04.png">
+		<img src="home_img\05.png">
+		<img src="home_img\06.png">
+		<img src="home_img\07.png">
+		<img src="home_img\08.png">
+		<img src="home_img\09.png">
+		<img src="home_img\10.png">
+		</div>
+		<script type="text/javascript">
+			$(window).load(function () {
+       			$("#myslider").endlessScroll({
+            		width: '2400px',
+            		height: '450px',
+            		<!--stepsは値<0で右から左-->
+           			steps: -2,
+            		<!--speedは値が小さいほど速くなる-->
+            		speed: 15,
+            		mousestop: false
+    			});
+                        $("img").attr("height", 450);
+	    	});
+		</script>
+<!--ここまで-->
+		<h3>さあ, あなたもはじめてみよう！</h3>
+<!--スタートボタン-->
+		<!--<input type="button" onclick="location.href='2.php'"value="ここからスタート！！">-->
+		<input type="button" onclick="location.href='wait.html'"value="ここからスタート！！">
+		</center>
+		<div align="right">  
+			<p>made by SP2LC</p>
+		</div>
+	</body>
+
+</html>

@@ -1,0 +1,28 @@
+#head {
+   background-color: #cfc;
+   float top;
+}
+
+#demo {
+   background-color: #cfc;
+  /* float: top;*/
+
+}
+
+#demoPC {
+
+   background-color: #cfc;
+   float: left;
+
+}
+
+#demoUSER {
+   background-color: #ffff99;
+   float: right;
+
+}
+
+#copyright {
+   background-color: #ffff99;
+   float: bottom;
+}

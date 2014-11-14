@@ -18,7 +18,7 @@ if(!$db_selected){
 }
 //$_GET["score_id"] = "1228";
 if (!isset($_GET["score_id"])) {
-  $score_id=1244;
+  $score_id=1234;
 }
 else{
   $score_id=$_GET["score_id"];
@@ -242,11 +242,16 @@ window.onload = function(ans_str)
       var blc_num = <?php echo $ans_str; ?>;
       ans_spl= parse(blc_num);
       //setInterval(command_controll,spd);
-      sel_rate = <?php echo $sel_rate; ?>;
-      exc_rate = <?php echo $exc_rate; ?>;
+      //sel_rate = <?php echo $sel_rate; ?>;
+      sel_rate = 200;
+      //exc_rate = <?php echo $exc_rate; ?>;
+      exc_rate = 100;
       spd = exc_rate * 10;
-      command_controll();
+      $("#start").bind("click", command_controll);
+      $("#start").css("left", wid * columns);
+      $("#start").css("top", 0);
     }
     </script>
+    <button id="start" style="position: absolute;">スタート</button>
   </body>
 </html>
